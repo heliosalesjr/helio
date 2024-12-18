@@ -1,0 +1,26 @@
+.animatedText {
+    background: linear-gradient(
+      -45deg, 
+      #4ade80, /* verde suave */
+      #a78bfa, /* roxo suave */
+      #fdba74  /* laranja suave */
+    );
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient 10s ease infinite;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
