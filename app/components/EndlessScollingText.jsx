@@ -6,19 +6,19 @@ import { useEffect, useRef } from "react";
 const EndlessScrollingText = () => {
   const controlsTop = useAnimation();
   const controlsBottom = useAnimation();
-  const containerRef = useRef(null);
 
-  // Detecta mudança na direção do scroll
-  const handleScroll = () => {
-    const direction = window.scrollY > lastScrollY ? 1 : -1;
-    lastScrollY = window.scrollY;
+  const phrases = {
+    top: "Coding for a better now and an even better future",
+    bottom: "Education / Gaming / Scaling / Entertaining / Living",
+  };
 
-    // Define direção do movimento com easing in/out
+  // Configuração da animação
+  const startAnimation = (direction) => {
     const animationSettings = {
-      x: direction === 1 ? ["100%", "-100%"] : ["-100%", "100%"],
+      x: direction === 1 ? ["0%", "-100%"] : ["-100%", "0%"],
       transition: {
         duration: 10,
-        ease: "easeInOut",
+        ease: "linear",
         repeat: Infinity,
       },
     };
@@ -30,43 +30,45 @@ const EndlessScrollingText = () => {
     });
   };
 
-  // Define o scroll inicial e adiciona listener
+  // Detecta direção do scroll
   let lastScrollY = 0;
+  const handleScroll = () => {
+    const direction = window.scrollY > lastScrollY ? 1 : -1;
+    lastScrollY = window.scrollY;
+    startAnimation(direction);
+  };
+
   useEffect(() => {
-    controlsTop.start({
-      x: ["100%", "-100%"],
-      transition: { duration: 10, ease: "easeInOut", repeat: Infinity },
-    });
-
-    controlsBottom.start({
-      x: ["-100%", "100%"],
-      transition: { duration: 10, ease: "easeInOut", repeat: Infinity },
-    });
-
+    startAnimation(1); // Inicia com direção padrão
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [controlsTop, controlsBottom]);
+  }, []);
+
+  // Renderiza múltiplas cópias do texto
+  const renderRepeatedText = (text, copies = 3) => {
+    return new Array(copies)
+      .fill(text)
+      .map((phrase, index) => <span key={index} className="mx-4">{phrase}</span>);
+  };
 
   return (
     <div className="relative overflow-hidden w-full bg-gray-900 text-white py-12">
-      <div className="h-20">
-        {/* Frase superior */}
+      {/* Linha superior */}
+      <div className="h-20 overflow-hidden">
         <motion.div
-          ref={containerRef}
           animate={controlsTop}
-          className="text-4xl md:text-6xl font-bold whitespace-nowrap"
+          className="flex whitespace-nowrap text-4xl md:text-6xl font-bold"
         >
-          Coding for a better now and an even better future
+          {renderRepeatedText(phrases.top)}
         </motion.div>
       </div>
-      <div className="h-20 mt-4">
-        {/* Frase inferior */}
+      {/* Linha inferior */}
+      <div className="h-20 mt-4 overflow-hidden">
         <motion.div
-          ref={containerRef}
           animate={controlsBottom}
-          className="text-2xl md:text-4xl font-medium text-gray-300 whitespace-nowrap"
+          className="flex whitespace-nowrap text-2xl md:text-4xl font-medium text-gray-300"
         >
-          Education / Gaming / Scaling / Entertaining / Living
+          {renderRepeatedText(phrases.bottom)}
         </motion.div>
       </div>
     </div>
