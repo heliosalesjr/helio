@@ -32,7 +32,7 @@ export default function AnimatedName() {
       <h1 
         className={`${currentFont.font.className} ${styles.animatedText} text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-center mb-8`}
       >
-        Hélio Sales Júnior
+        Ornitorrinco
       </h1>
       <button 
         onClick={nextFont}
