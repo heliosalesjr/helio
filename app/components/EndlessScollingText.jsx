@@ -1,43 +1,39 @@
 "use client";
 
 import { motion, useAnimation } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const EndlessScrollingText = () => {
   const controlsTop = useAnimation();
   const controlsBottom = useAnimation();
-  const [direction, setDirection] = useState(1); // 1 = para a direita, -1 = para a esquerda
+  const [direction, setDirection] = useState(1); // 1 = direita para esquerda, -1 = esquerda para direita
+  const containerRef = useRef(null);
+  const textTopRef = useRef(null);
+  const textBottomRef = useRef(null);
+  const speed = 20; // Velocidade base do texto (ajustável)
 
   const phrases = {
-    top: "Coding for a better now and an even better future",
-    bottom: "Education / Gaming / Scaling / Entertaining / Living",
+    top: "Coding for a better now and an even better future ",
+    bottom: "Education / Gaming / Scaling / Entertaining / Living ",
   };
 
-  // Configuração da animação
-  const startAnimation = (currentDirection) => {
-    const speed = 20; // Ajuste a velocidade aqui (maior valor = mais devagar)
-    const offset = "100%";
+  const calculatePosition = (ref) => {
+    const style = window.getComputedStyle(ref.current);
+    const matrix = new DOMMatrix(style.transform);
+    return matrix.m41 || 0; // Pega a posição X do transform
+  };
 
-    controlsTop.start({
-      x: currentDirection === 1 ? [0, `-${offset}`] : [`-${offset}`, 0],
+  const startAnimation = (controls, direction, offset = 0) => {
+    controls.start({
+      x: [offset, direction * -textTopRef.current.offsetWidth],
       transition: {
-        repeat: Infinity,
         duration: speed,
-        ease: "linear",
-      },
-    });
-
-    controlsBottom.start({
-      x: currentDirection === -1 ? [0, `-${offset}`] : [`-${offset}`, 0],
-      transition: {
         repeat: Infinity,
-        duration: speed,
         ease: "linear",
       },
     });
   };
 
-  // Atualiza a direção ao detectar o scroll
   useEffect(() => {
     let lastScrollY = window.scrollY;
 
@@ -45,7 +41,18 @@ const EndlessScrollingText = () => {
       const newDirection = window.scrollY > lastScrollY ? 1 : -1;
       if (newDirection !== direction) {
         setDirection(newDirection);
-        startAnimation(newDirection); // Reinicia a animação na nova direção
+
+        // Pega a posição atual do texto
+        const currentTopPosition = calculatePosition(textTopRef);
+        const currentBottomPosition = calculatePosition(textBottomRef);
+
+        // Para as animações atuais
+        controlsTop.stop();
+        controlsBottom.stop();
+
+        // Reinicia as animações na posição atual
+        startAnimation(controlsTop, newDirection, currentTopPosition);
+        startAnimation(controlsBottom, -newDirection, currentBottomPosition);
       }
       lastScrollY = window.scrollY;
     };
@@ -54,36 +61,35 @@ const EndlessScrollingText = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [direction]);
 
-  // Inicia a animação quando o componente é montado
   useEffect(() => {
-    startAnimation(direction);
+    // Inicializa as animações
+    startAnimation(controlsTop, direction);
+    startAnimation(controlsBottom, -direction);
   }, []);
 
-  // Renderiza múltiplas cópias do texto
-  const renderRepeatedText = (text, copies = 3) => {
-    return new Array(copies)
-      .fill(text)
-      .map((phrase, index) => <span key={index} className="mx-4">{phrase}</span>);
-  };
-
   return (
-    <div className="relative overflow-hidden w-full bg-gray-900 text-white py-12">
-      {/* Linha superior */}
+    <div
+      ref={containerRef}
+      className="relative overflow-hidden w-full bg-gray-900 text-white py-12"
+    >
+      {/* Frase superior */}
       <div className="h-20 overflow-hidden">
         <motion.div
+          ref={textTopRef}
           animate={controlsTop}
           className="flex whitespace-nowrap text-4xl md:text-6xl font-bold"
         >
-          {renderRepeatedText(phrases.top)}
+          {phrases.top.repeat(3)}
         </motion.div>
       </div>
-      {/* Linha inferior */}
+      {/* Frase inferior */}
       <div className="h-20 mt-4 overflow-hidden">
         <motion.div
+          ref={textBottomRef}
           animate={controlsBottom}
           className="flex whitespace-nowrap text-2xl md:text-4xl font-medium text-gray-300"
         >
-          {renderRepeatedText(phrases.bottom)}
+          {phrases.bottom.repeat(3)}
         </motion.div>
       </div>
     </div>
@@ -91,4 +97,3 @@ const EndlessScrollingText = () => {
 };
 
 export default EndlessScrollingText;
-
