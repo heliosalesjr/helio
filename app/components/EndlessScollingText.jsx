@@ -1,11 +1,12 @@
 "use client";
 
 import { motion, useAnimation } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 const EndlessScrollingText = () => {
   const controlsTop = useAnimation();
   const controlsBottom = useAnimation();
+  const [direction, setDirection] = useState(1); // 1 = para a direita, -1 = para a esquerda
 
   const phrases = {
     top: "Coding for a better now and an even better future",
@@ -13,35 +14,49 @@ const EndlessScrollingText = () => {
   };
 
   // Configuração da animação
-  const startAnimation = (direction) => {
-    const animationSettings = {
-      x: direction === 1 ? ["0%", "-100%"] : ["-100%", "0%"],
-      transition: {
-        duration: 10,
-        ease: "linear",
-        repeat: Infinity,
-      },
-    };
+  const startAnimation = (currentDirection) => {
+    const speed = 20; // Ajuste a velocidade aqui (maior valor = mais devagar)
+    const offset = "100%";
 
-    controlsTop.start(animationSettings);
+    controlsTop.start({
+      x: currentDirection === 1 ? [0, `-${offset}`] : [`-${offset}`, 0],
+      transition: {
+        repeat: Infinity,
+        duration: speed,
+        ease: "linear",
+      },
+    });
+
     controlsBottom.start({
-      ...animationSettings,
-      x: animationSettings.x.reverse(), // Movimento oposto
+      x: currentDirection === -1 ? [0, `-${offset}`] : [`-${offset}`, 0],
+      transition: {
+        repeat: Infinity,
+        duration: speed,
+        ease: "linear",
+      },
     });
   };
 
-  // Detecta direção do scroll
-  let lastScrollY = 0;
-  const handleScroll = () => {
-    const direction = window.scrollY > lastScrollY ? 1 : -1;
-    lastScrollY = window.scrollY;
-    startAnimation(direction);
-  };
-
+  // Atualiza a direção ao detectar o scroll
   useEffect(() => {
-    startAnimation(1); // Inicia com direção padrão
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const newDirection = window.scrollY > lastScrollY ? 1 : -1;
+      if (newDirection !== direction) {
+        setDirection(newDirection);
+        startAnimation(newDirection); // Reinicia a animação na nova direção
+      }
+      lastScrollY = window.scrollY;
+    };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, [direction]);
+
+  // Inicia a animação quando o componente é montado
+  useEffect(() => {
+    startAnimation(direction);
   }, []);
 
   // Renderiza múltiplas cópias do texto
@@ -76,3 +91,4 @@ const EndlessScrollingText = () => {
 };
 
 export default EndlessScrollingText;
+
